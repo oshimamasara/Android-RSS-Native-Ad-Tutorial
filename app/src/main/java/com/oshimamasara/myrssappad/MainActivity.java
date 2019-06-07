@@ -7,6 +7,8 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.koushikdutta.async.future.FutureCallback;
@@ -42,19 +44,29 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             // グルグルマーク
-            Fragment loadingScreenFragment = new LoadingScreenFragment();
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.fragment_container, loadingScreenFragment);
-            transaction.commit();
+            //Fragment loadingScreenFragment = new LoadingScreenFragment();
+            //FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            //transaction.add(R.id.fragment_container, loadingScreenFragment);
+            //transaction.commit();
 
-            // JSONデータの保存
-            xmljson();
+            final Button btn = findViewById(R.id.button);
 
-            // JSONデータ読み込み
-            addMenuItemsFromJson();
+            if (savedInstanceState == null) {
 
-            // JSONデータ表示
-            loadMenu();
+                // XML - JSON, SAVE Json File
+                xmljson();
+
+                btn.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // JSON データ読み込み、表示
+                        addMenuItemsFromJson();
+                        loadMenu();
+
+                        btn.setVisibility(View.INVISIBLE); //タップでボタン非表示に
+                    }
+                });
+            }
         }
     }
 
@@ -135,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                     FileOutputStream fileOutputStream = openFileOutput("FeedData.json", MODE_PRIVATE);
                     fileOutputStream.write(text.getBytes());
                     fileOutputStream.close();
-                    Toast.makeText(getApplicationContext(), "Data Set OK", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Data Set OK", Toast.LENGTH_LONG).show();
 
                 } catch (JSONException e1) {
                     e1.printStackTrace();
