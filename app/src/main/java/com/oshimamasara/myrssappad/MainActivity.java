@@ -7,12 +7,18 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.widget.Toast;
+
+import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.ion.Ion;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
     // List of MenuItems that populate the RecyclerView.
     private List<Object> mRecyclerViewItems = new ArrayList<>();
+    private String text;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,9 +46,9 @@ public class MainActivity extends AppCompatActivity {
             Fragment loadingScreenFragment = new LoadingScreenFragment();
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.add(R.id.fragment_container, loadingScreenFragment);
-
-            // Commit the transaction.
             transaction.commit();
+
+            xmljson();
 
             // Update the RecyclerView item's list with menu items.
             addMenuItemsFromJson();
@@ -117,5 +124,33 @@ public class MainActivity extends AppCompatActivity {
 
         return new String(builder);
     }
+
+    private void xmljson() {
+        Ion.with(getApplicationContext()).load("https://api.rss2json.com/v1/api.json?rss_url=https://blog.codecamp.jp/feed.xml").asString().setCallback(new FutureCallback<String>() {
+            @Override
+            public void onCompleted(Exception e, String result) {
+                try {
+                    JSONObject obj = new JSONObject(result);
+
+                    //SAVE
+                    text = obj.toString();
+                    FileOutputStream fileOutputStream = openFileOutput("FeedData.json", MODE_PRIVATE);
+                    fileOutputStream.write(text.getBytes());
+                    fileOutputStream.close();
+                    Toast.makeText(getApplicationContext(), "Data Set OK", Toast.LENGTH_SHORT).show();
+
+                } catch (JSONException e1) {
+                    e1.printStackTrace();
+                } catch (FileNotFoundException e1) {
+                    e1.printStackTrace();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+    }
+
+
+
 
 }
