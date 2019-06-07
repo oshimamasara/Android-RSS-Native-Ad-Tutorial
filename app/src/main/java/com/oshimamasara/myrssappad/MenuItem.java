@@ -15,44 +15,32 @@
  */
 package com.oshimamasara.myrssappad;
 
-/**
- * The {@link MenuItem} class.
- * <p>Defines the attributes for a restaurant menu item.</p>
- */
 class MenuItem {
-
-    private final String name;
+    private final String title;
+    private final String pubDate;
     private final String description;
-    private final String price;
-    private final String category;
-    private final String imageName;
+    private final String link;
 
-    public MenuItem(String name, String description, String price, String category,
-                    String imageName) {
-        this.name = name;
+    public MenuItem(String title,String pubDate, String description, String link) {
+        this.title = title;
+        this.pubDate=pubDate;
         this.description = description;
-        this.price = price;
-        this.category = category;
-        this.imageName = imageName;
+        this.link=link;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle(){
+        return title;
     }
 
-    public String getDescription() {
+    public String getPubDate(){
+        return pubDate;
+    }
+
+    public String getDescription(){
         return description;
     }
 
-    public String getPrice() {
-        return price;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public String getImageName() {
-        return imageName;
+    public String getLink(){
+        return link;
     }
 }

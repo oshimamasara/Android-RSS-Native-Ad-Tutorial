@@ -31,7 +31,7 @@ import java.util.List;
  */
 public class MainActivity extends AppCompatActivity {
 
-    // List of MenuItems that populate the RecyclerView.
+    private static final String TAG = "MainActivityのログ：";
     private List<Object> mRecyclerViewItems = new ArrayList<>();
     private String text;
 
@@ -41,18 +41,19 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (savedInstanceState == null) {
-            // Create new fragment to display a progress spinner while the data set for the
-            // RecyclerView is populated.
+            // グルグルマーク
             Fragment loadingScreenFragment = new LoadingScreenFragment();
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             transaction.add(R.id.fragment_container, loadingScreenFragment);
             transaction.commit();
 
+            // JSONデータの保存
             xmljson();
 
-            // Update the RecyclerView item's list with menu items.
+            // JSONデータ読み込み
             addMenuItemsFromJson();
 
+            // JSONデータ表示
             loadMenu();
         }
     }
@@ -62,39 +63,34 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadMenu() {
-        // Create new fragment and transaction
         Fragment newFragment = new RecyclerViewFragment();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-
-        // Replace whatever is in the fragment_container view with this fragment,
-        // and add the transaction to the back stack
         transaction.replace(R.id.fragment_container, newFragment);
         transaction.addToBackStack(null);
-
-        // Commit the transaction
         transaction.commit();
     }
 
-    /**
-     * Adds {@link MenuItem}'s from a JSON file.
-     */
     private void addMenuItemsFromJson() {
         try {
             String jsonDataString = readJsonDataFromFile();
-            JSONArray menuItemsJsonArray = new JSONArray(jsonDataString);
+            Log.i(TAG,"jsonDtaString:" + jsonDataString);
+
+            JSONObject menuItemsJsonObject = new JSONObject(jsonDataString);
+
+            JSONArray menuItemsJsonArray = menuItemsJsonObject.getJSONArray("items");
+            Log.i(TAG,"jsonArray:" + menuItemsJsonArray);
 
             for (int i = 0; i < menuItemsJsonArray.length(); ++i) {
 
                 JSONObject menuItemObject = menuItemsJsonArray.getJSONObject(i);
 
-                String menuItemName = menuItemObject.getString("name");
+                String menuItemName = menuItemObject.getString("title");
+                String menuPubDate = menuItemObject.getString("pubDate");
                 String menuItemDescription = menuItemObject.getString("description");
-                String menuItemPrice = menuItemObject.getString("price");
-                String menuItemCategory = menuItemObject.getString("category");
-                String menuItemImageName = menuItemObject.getString("photo");
+                String menuItemLink = menuItemObject.getString("link");
 
-                MenuItem menuItem = new MenuItem(menuItemName, menuItemDescription, menuItemPrice,
-                        menuItemCategory, menuItemImageName);
+                MenuItem menuItem = new MenuItem(menuItemName, menuPubDate, menuItemDescription,
+                        menuItemLink);
                 mRecyclerViewItems.add(menuItem);
             }
         } catch (IOException | JSONException exception) {
@@ -110,11 +106,12 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             String jsonDataString = null;
-            inputStream = getResources().openRawResource(R.raw.menu_items_json);
+            inputStream = openFileInput("FeedData.json");
             BufferedReader bufferedReader = new BufferedReader(
                     new InputStreamReader(inputStream, "UTF-8"));
             while ((jsonDataString = bufferedReader.readLine()) != null) {
                 builder.append(jsonDataString);
+                Log.i(TAG,"JSON読み込み："+jsonDataString);
             }
         } finally {
             if (inputStream != null) {
@@ -124,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
         return new String(builder);
     }
+
 
     private void xmljson() {
         Ion.with(getApplicationContext()).load("https://api.rss2json.com/v1/api.json?rss_url=https://blog.codecamp.jp/feed.xml").asString().setCallback(new FutureCallback<String>() {
