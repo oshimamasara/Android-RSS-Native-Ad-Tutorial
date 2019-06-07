@@ -11,6 +11,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdLoader;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.formats.NativeAd;
+import com.google.android.gms.ads.formats.NativeAdOptions;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
@@ -37,10 +44,17 @@ public class MainActivity extends AppCompatActivity {
     private List<Object> mRecyclerViewItems = new ArrayList<>();
     private String text;
 
+    public static final int NUMBER_OF_ADS = 1;
+    private AdLoader adLoader;
+    private List<UnifiedNativeAd> mNativeAds = new ArrayList<>();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        final Button btn = findViewById(R.id.button);
 
         if (savedInstanceState == null) {
             // グルグルマーク
@@ -48,10 +62,6 @@ public class MainActivity extends AppCompatActivity {
             //FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             //transaction.add(R.id.fragment_container, loadingScreenFragment);
             //transaction.commit();
-
-            final Button btn = findViewById(R.id.button);
-
-            if (savedInstanceState == null) {
 
                 // XML - JSON, SAVE Json File
                 xmljson();
@@ -61,14 +71,64 @@ public class MainActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         // JSON データ読み込み、表示
                         addMenuItemsFromJson();
+                        //loadMenu();
                         loadMenu();
+                        //load Ad
+                        loadNativeAds();
 
                         btn.setVisibility(View.INVISIBLE); //タップでボタン非表示に
                     }
                 });
-            }
+
+                // AdMob
+                MobileAds.initialize(this, "ca-app-pub-3940256099942544~3347511713");
+
         }
     }
+
+
+
+    private void loadNativeAds() {
+        AdLoader.Builder builder = new AdLoader.Builder(this, "ca-app-pub-3940256099942544/8135179316");
+        adLoader = builder.forUnifiedNativeAd(
+                new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
+                    @Override
+                    public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
+                        mNativeAds.add(unifiedNativeAd);
+                        if (!adLoader.isLoading()) {
+                            insertAdsInMenuItems();
+                        }
+                    }
+                }).withAdListener(
+                new AdListener() {
+                    @Override
+                    public void onAdFailedToLoad(int errorCode) {
+                        Log.e("MainActivity", "The previous native ad failed to load. Attempting to"
+                                + " load another.");
+                        if (!adLoader.isLoading()) {
+                            insertAdsInMenuItems();
+                        }
+                    }
+                }).build();
+
+        // 広告表示
+        adLoader.loadAds(new AdRequest.Builder().build(), NUMBER_OF_ADS);
+    }
+
+
+    private void insertAdsInMenuItems() {
+        if (mNativeAds.size() <= 0) {
+            return;
+        }
+
+        int offset = (mRecyclerViewItems.size() / mNativeAds.size()) + 1;
+        int index = 6;
+        for (UnifiedNativeAd ad: mNativeAds) {
+            mRecyclerViewItems.add(index, ad);
+            index = index + offset;
+        }
+    }
+
 
     public List<Object> getRecyclerViewItems() {
         return mRecyclerViewItems;
@@ -159,8 +219,4 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
-
 }
