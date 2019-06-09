@@ -195,6 +195,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     private void xmljson() {
         Ion.with(getApplicationContext()).load("https://api.rss2json.com/v1/api.json?rss_url=https://blog.codecamp.jp/feed.xml").asString().setCallback(new FutureCallback<String>() {
             @Override
@@ -220,3 +236,20 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
